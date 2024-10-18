@@ -17,6 +17,21 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
+  session: {
+    strategy: "jwt",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  pages: {
+    signIn: "/sign-in",
+  },
+  callbacks: {
+    async jwt({ token, account }) {
+      if (account?.provider === "google") {
+        token.idToken = account.id_token;
+      }
+      return token;
+    },
+  },
 };
 
 export default NextAuth(authOptions)

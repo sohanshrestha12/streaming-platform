@@ -1,11 +1,15 @@
-"use client"
-import { signIn } from "next-auth/react";
+import SignInButton from "@/app/components/SignInButton";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
-export default function Page() {
 
+export default async function Page() {
+  const session = await getServerSession(authOptions);
+  if(session){
+    redirect('/');
+  }
   return (
-   <button onClick={() => signIn("google", { callbackUrl: "/" })}>
-      Sign In
-    </button>
+   <SignInButton/>
   );
 }
