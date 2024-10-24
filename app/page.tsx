@@ -9,7 +9,7 @@ export default function Home() {
   }
   return (
     <>
-      <h2>Protected home page Welcome {session?.user?.email}</h2>
+      <h2>Protected home page Welcome {session?.user?.username}</h2>
       <div className="flex gap-2">
           
         <Image

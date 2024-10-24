@@ -7,7 +7,7 @@ const SignInButton = () => {
       signIn("google", { callbackUrl: "/" });
     };
   return (
-    <Button onClick={handleSignIn}>Sign in</Button>
+    <Button onClick={handleSignIn}>Sign in with google</Button>
   )
 }
 
