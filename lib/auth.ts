@@ -1,16 +1,16 @@
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import NextAuth, { NextAuthOptions, Session, User } from "next-auth";
 import { AdapterUser } from "next-auth/adapters";
 import { JWT } from "next-auth/jwt";
 import GoogleProvider from "next-auth/providers/google";
-import client from "./mongodb";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma } from "./prisma";
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   throw new Error("Missing Google OAuth credentials");
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: MongoDBAdapter(client),
+  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -26,10 +26,6 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async session({ session, token }: { session: Session; token: JWT }) {
-      if (!session.user.email) {
-        session.user.username = null;
-        return session;
-      }
       session.user.username =
         typeof token.username === "string" ? token.username : null;
 
@@ -39,10 +35,7 @@ export const authOptions: NextAuthOptions = {
       const email = user?.email || token.email;
 
       if (email) {
-        const userFromDb = await client
-          .db("Streaming")
-          .collection("users")
-          .findOne({ email });
+        const userFromDb = await prisma.user.findUnique({where:{email}});
         token.username = userFromDb ? userFromDb.username : null;
       }
       return token;

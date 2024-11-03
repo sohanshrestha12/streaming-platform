@@ -1,5 +1,5 @@
 import { authOptions } from "@/lib/auth";
-import client from "@/lib/mongodb";
+import {prisma} from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { NextRequest,NextResponse } from "next/server";
 
@@ -14,16 +14,16 @@ export async function POST(req:NextRequest){
     const session = await getServerSession({req,...authOptions}); 
   
 
-    if(!session) NextResponse.json({message:'Unauthorized'},{status:401});
+    if(!session || !session.user.email) NextResponse.json({message:'Unauthorized'},{status:401});
 
     try {
       const {username} = await req.json();
       if(!username)  NextResponse.json({message:'username is required!'},{status:400});
 
-      const existingUser = await client.db('Streaming').collection('users').findOne({username});
+      const existingUser = await prisma.user.findUnique({where:{username}});
       if(existingUser) NextResponse.json({message:'Username already taken'},{status:400});
 
-      await client.db("Streaming").collection('users').updateOne({email:session?.user?.email},{$set:{username}});
+      await prisma.user.update({where:{email:session?.user.email as string},data:{username}});
       return  NextResponse.json({message:'Username set Successfully'},{status:200});
     } catch (error) {
        return NextResponse.json(
